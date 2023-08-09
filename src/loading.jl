@@ -17,6 +17,13 @@ function pkg_fileinfo(id::PkgId)
 end
 
 function parse_pkg_files(id::PkgId)
+    origin = get(Base.pkgorigins, id, nothing)
+    if origin isa Base.PkgOrigin && !isnothing(origin.path)
+        package_root = dirname(dirname(origin.path)) # assumes `path` is src/Foo.jl
+        origin.version = Base.get_pkgversion_from_path(package_root)
+    else
+        @debug "Failed to update package version" id origin
+    end
     pkgdata = get(pkgdatas, id, nothing)
     if pkgdata === nothing
         pkgdata = PkgData(id)
